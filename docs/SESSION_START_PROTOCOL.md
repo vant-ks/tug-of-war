@@ -53,9 +53,9 @@ ls -la docs/
 Start dev server (background):
 ```bash
 npm run dev
-# → http://localhost:5173
+# → http://localhost:3040
 ```
-Verify HTTP 200 on `http://localhost:5173`.
+Verify HTTP 200 on `http://localhost:3040`.
 
 ---
 

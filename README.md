@@ -22,11 +22,11 @@ A multi-team party game with real-time cross-tab communication via BroadcastChan
 ```bash
 npm install
 npm run dev
-# → http://localhost:5173
+# → http://localhost:3040
 ```
 
-Open arena in a second window: `http://localhost:5173?view=arena`  
-Open player on any device on the same network: `http://<your-ip>:5173?view=player`
+Open arena in a second window: `http://localhost:3040?view=arena`  
+Open player on any device on the same network: `http://<your-ip>:3040?view=player`
 
 ## Build & Deploy
 

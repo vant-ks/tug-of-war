@@ -107,7 +107,7 @@ TugOfWar (root component — URL router)
 - **Styling:** Inline styles only (no CSS files, no Tailwind, no styled-components)
 - **No backend, no DB, no API calls**
 - **Timer options:** `[10, 20, 30]` seconds (defined in `TIMER_OPTIONS` constant)
-- **Port:** 5173 (dev), Railway-assigned (prod)
+- **Port:** 3040 (dev), Railway-assigned (prod)
 
 ---
 
