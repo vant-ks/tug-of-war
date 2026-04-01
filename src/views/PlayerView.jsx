@@ -14,6 +14,7 @@ const playerShell = {
 };
 
 export default function PlayerView() {
+  const urlCode = new URLSearchParams(window.location.search).get("code");
   const [joined, setJoined] = useState(false);
   const [teamId, setTeamId] = useState(null);
   const [gameState, setGameState] = useState(null);
@@ -157,6 +158,15 @@ export default function PlayerView() {
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             marginBottom: 32,
           }}>TUG OF WAR</h1>
+
+          {urlCode && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, color: "#556", letterSpacing: 2, marginBottom: 4 }}>GAME CODE</div>
+              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 6, color: "#5eb7f1", fontFamily: "monospace" }}>
+                {urlCode}
+              </div>
+            </div>
+          )}
 
           {availableTeams.length === 0 && (
             <p style={{ color: "#778", fontSize: 14 }}>Waiting for game to be created...</p>

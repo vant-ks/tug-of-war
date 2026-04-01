@@ -44,8 +44,11 @@ Single-file React component for a multi-team tug-of-war party game. Runs as a Fr
 
 ### 3. QR code on arena + open-player button in editor
 
-**Status:** IN PROGRESS
-**Files to change:** `src/views/EditorView.jsx`, `src/views/ArenaDisplay.jsx`, `package.json`
+**Status:** ✅ COMPLETE
+**Tags:** feat, arena, editor, qr, broadcast
+**Files changed:** `src/views/EditorView.jsx`, `src/views/ArenaDisplay.jsx`, `package.json`
+**Commit:** 0d9e03b
+**Summary:** Added `showQR` state to EditorView with toggle button that broadcasts `toggle_qr` message; ArenaDisplay renders QRCodeSVG overlay (bottom-right, white card) with player URL on `toggle_qr`; added "Open Player View" button in editor next to "Open Arena Display" for quick testing.
 
 ---
 

@@ -414,7 +414,8 @@ export default function ArenaDisplay() {
       )}
 
       {showQR && (() => {
-        const playerUrl = `${window.location.origin}${window.location.pathname}?view=player`;
+        const code = gameState?.code;
+        const playerUrl = `${window.location.origin}${window.location.pathname}?view=player${code ? `&code=${code}` : ""}`;
         return (
           <div style={{
             position: "absolute", bottom: 24, right: 24, zIndex: 50,
@@ -422,8 +423,16 @@ export default function ArenaDisplay() {
             boxShadow: "0 8px 32px rgba(0,0,0,0.5)", textAlign: "center",
           }}>
             <QRCodeSVG value={playerUrl} size={160} level="M" />
+            {code && (
+              <div style={{
+                fontSize: 22, fontWeight: 700, color: "#111",
+                letterSpacing: 4, marginTop: 10, fontFamily: "monospace",
+              }}>
+                {code}
+              </div>
+            )}
             <div style={{
-              fontSize: 11, color: "#444", marginTop: 10,
+              fontSize: 10, color: "#888", marginTop: 6,
               fontFamily: "monospace", maxWidth: 160, wordBreak: "break-all",
             }}>
               {playerUrl}
