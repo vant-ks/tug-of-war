@@ -11,6 +11,8 @@ const wss = new WebSocketServer({ server, path: "/ws" });
 const rooms = new Map();
 // roomState: Map<code, string> — last start_game payload for late joiners
 const roomState = new Map();
+// lobbyState: Map<code, string> — latest lobby_state (teams config) for late joiners
+const lobbyState = new Map();
 
 wss.on("connection", (ws, req) => {
   const params = new URLSearchParams(req.url.replace(/^.*\?/, ""));
@@ -25,10 +27,9 @@ wss.on("connection", (ws, req) => {
   const room = rooms.get(code);
   room.add(ws);
 
-  // Send cached game state to late joiners
-  if (roomState.has(code)) {
-    ws.send(roomState.get(code));
-  }
+  // Send cached lobby config then last game state to late joiners
+  if (lobbyState.has(code)) ws.send(lobbyState.get(code));
+  if (roomState.has(code)) ws.send(roomState.get(code));
 
   ws.on("message", (data) => {
     const raw = data.toString();
@@ -36,6 +37,7 @@ wss.on("connection", (ws, req) => {
       const msg = JSON.parse(raw);
       if (msg.type === "start_game") roomState.set(code, raw);
       if (msg.type === "reset") roomState.delete(code);
+      if (msg.type === "lobby_state") lobbyState.set(code, raw);
     } catch {}
 
     // Relay to all other clients in the room

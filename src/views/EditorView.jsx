@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TEAM_COLORS, GAME_MODES, TIMER_OPTIONS } from "../constants";
 import { useSocket } from "../hooks/useSocket";
 import { broadcastState } from "../utils/storage";
@@ -22,6 +22,13 @@ export default function EditorView() {
   const send = useSocket((msg) => {
     if (msg.type === "round_end") setRoundResults(msg.results);
   }, gameCode, "editor");
+
+  // Broadcast lobby config whenever teams or game code changes so players see teams immediately
+  useEffect(() => {
+    const enabled = teams.filter((t) => t.enabled);
+    if (enabled.length < 2) return;
+    send({ type: "lobby_state", teams: enabled.map((t) => ({ ...t, colorIdx: t.id })), code: gameCode });
+  }, [teams, gameCode, send]);
 
   const enabledTeams = teams.filter((t) => t.enabled);
 

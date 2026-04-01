@@ -15,6 +15,7 @@ export function useSocket(handler, code, role = "client") {
   const connRef = useRef(null);
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
+  const sendQueueRef = useRef([]);
 
   useEffect(() => {
     // ── Dev: BroadcastChannel fallback ──────────────────────────────────────
@@ -36,6 +37,11 @@ export function useSocket(handler, code, role = "client") {
     const ws = new WebSocket(url);
     connRef.current = { type: "ws", conn: ws };
 
+    ws.onopen = () => {
+      sendQueueRef.current.forEach((msg) => ws.send(msg));
+      sendQueueRef.current = [];
+    };
+
     ws.onmessage = (e) => {
       try {
         handlerRef.current(JSON.parse(e.data));
@@ -49,6 +55,7 @@ export function useSocket(handler, code, role = "client") {
     return () => {
       ws.close();
       connRef.current = null;
+      sendQueueRef.current = [];
     };
   }, [code, role]);
 
@@ -57,8 +64,13 @@ export function useSocket(handler, code, role = "client") {
     if (!c) return;
     if (c.type === "bc") {
       c.conn.postMessage(msg);
-    } else if (c.type === "ws" && c.conn.readyState === WebSocket.OPEN) {
-      c.conn.send(JSON.stringify(msg));
+    } else if (c.type === "ws") {
+      const json = JSON.stringify(msg);
+      if (c.conn.readyState === WebSocket.OPEN) {
+        c.conn.send(json);
+      } else {
+        sendQueueRef.current.push(json);
+      }
     }
   }, []);
 

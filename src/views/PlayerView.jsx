@@ -17,6 +17,8 @@ export default function PlayerView() {
   const urlCode = new URLSearchParams(window.location.search).get("code");
   const [joined, setJoined] = useState(false);
   const [teamId, setTeamId] = useState(null);
+  const [availableTeams, setAvailableTeams] = useState([]);
+  const [gameInProgress, setGameInProgress] = useState(false);
   const [gameState, setGameState] = useState(null);
   const [phase, setPhase] = useState("join"); // join, lobby, countdown, playing, done
   const [countdown, setCountdown] = useState(null);
@@ -30,17 +32,24 @@ export default function PlayerView() {
   const scoreRef = useRef(0);
 
   const send = useSocket((msg) => {
+    if (msg.type === "lobby_state") {
+      setAvailableTeams(msg.teams);
+    }
     if (msg.type === "start_game") {
       setGameState(msg);
       totalTimeRef.current = msg.timer;
+      setAvailableTeams(msg.teams);
+      setGameInProgress(true);
       if (joined) {
         setPhase("countdown");
         setCountdown(3);
         scoreRef.current = 0;
         setScore(0);
       }
+      // if not yet joined, player stays on join screen to pick team for next round
     }
     if (msg.type === "reset") {
+      setGameInProgress(false);
       setPhase(joined ? "lobby" : "join");
       setGameState(null);
       setScore(0);
@@ -145,8 +154,6 @@ export default function PlayerView() {
 
   // JOIN screen
   if (phase === "join") {
-    const gs = gameState;
-    const availableTeams = gs?.teams || [];
     return (
       <div style={playerShell}>
         <div style={{ textAlign: "center", padding: "40px 24px" }}>
@@ -166,8 +173,16 @@ export default function PlayerView() {
             </div>
           )}
 
+          {gameInProgress && (
+            <div style={{
+              marginBottom: 16, padding: "8px 16px", borderRadius: 8,
+              background: "rgba(253,216,53,0.1)", border: "1px solid rgba(253,216,53,0.3)",
+              color: "#FDD835", fontSize: 13, letterSpacing: 1,
+            }}>GAME IN PROGRESS — pick team for next round</div>
+          )}
+
           {availableTeams.length === 0 && (
-            <p style={{ color: "#778", fontSize: 14 }}>Waiting for game to be created...</p>
+            <p style={{ color: "#778", fontSize: 14 }}>Waiting for host to set up game...</p>
           )}
 
           {availableTeams.length > 0 && (
@@ -199,7 +214,7 @@ export default function PlayerView() {
                   color: "#fff", fontSize: 16, fontWeight: 600, cursor: "pointer",
                   letterSpacing: 1,
                 }}>
-                  JOIN
+                  {gameInProgress ? "JOIN NEXT ROUND" : "JOIN"}
                 </button>
               )}
             </>
@@ -219,10 +234,12 @@ export default function PlayerView() {
             background: teamColor?.bg, display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 36, boxShadow: `0 0 40px ${teamColor?.glow}`,
           }}>💪</div>
-          <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 500, marginBottom: 8 }}>{
-            gameState?.teams?.find((t) => t.id === teamId)?.name
-          }</h2>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>Get ready...</p>
+          <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 500, marginBottom: 8 }}>
+            {gameState?.teams?.find((t) => t.id === teamId)?.name || availableTeams.find((t) => t.id === teamId)?.name}
+          </h2>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
+            {gameInProgress ? "Waiting for next round..." : "Get ready..."}
+          </p>
         </div>
       </div>
     );
