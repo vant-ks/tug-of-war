@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { TEAM_COLORS } from "../constants";
+import { TEAM_COLORS, GAME_MODES } from "../constants";
 import { useSocket } from "../hooks/useSocket";
 import { readState } from "../utils/storage";
 import { genMathQ, genColorQ, genHighLowQ } from "../utils/trivia";
@@ -19,6 +19,7 @@ export default function PlayerView() {
   const [teamId, setTeamId] = useState(null);
   const [availableTeams, setAvailableTeams] = useState([]);
   const [gameInProgress, setGameInProgress] = useState(false);
+  const [lobbyMode, setLobbyMode] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [phase, setPhase] = useState("join"); // join, lobby, countdown, playing, done
   const [countdown, setCountdown] = useState(null);
@@ -34,6 +35,7 @@ export default function PlayerView() {
   const send = useSocket((msg) => {
     if (msg.type === "lobby_state") {
       setAvailableTeams(msg.teams);
+      if (msg.mode) setLobbyMode(msg.mode);
     }
     if (msg.type === "start_game") {
       setGameState(msg);
@@ -187,6 +189,11 @@ export default function PlayerView() {
 
           {availableTeams.length > 0 && (
             <>
+              {lobbyMode && (
+                <div style={{ marginBottom: 16, color: "#778", fontSize: 13, letterSpacing: 1 }}>
+                  {GAME_MODES.find(m => m.id === lobbyMode)?.icon} {GAME_MODES.find(m => m.id === lobbyMode)?.label}
+                </div>
+              )}
               <p style={{ color: "#aab", fontSize: 14, marginBottom: 20 }}>Choose your team</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 300, margin: "0 auto" }}>
                 {availableTeams.map((t) => {
@@ -240,6 +247,11 @@ export default function PlayerView() {
           <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
             {gameInProgress ? "Waiting for next round..." : "Get ready..."}
           </p>
+          {lobbyMode && !gameInProgress && (
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 8, letterSpacing: 1 }}>
+              {GAME_MODES.find(m => m.id === lobbyMode)?.icon} {GAME_MODES.find(m => m.id === lobbyMode)?.label}
+            </div>
+          )}
         </div>
       </div>
     );

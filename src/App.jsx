@@ -2,6 +2,7 @@ import { useState } from "react";
 import EditorView from "./views/EditorView";
 import ArenaDisplay from "./views/ArenaDisplay";
 import PlayerView from "./views/PlayerView";
+import DevReset from "./components/DevReset";
 
 export default function App() {
   const [view] = useState(() => {
@@ -9,7 +10,10 @@ export default function App() {
     return p.get("view") || "editor";
   });
 
-  if (view === "arena") return <ArenaDisplay />;
-  if (view === "player") return <PlayerView />;
-  return <EditorView />;
+  return (
+    <>
+      {view === "arena" ? <ArenaDisplay /> : view === "player" ? <PlayerView /> : <EditorView />}
+      <DevReset />
+    </>
+  );
 }

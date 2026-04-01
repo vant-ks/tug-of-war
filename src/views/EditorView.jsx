@@ -23,12 +23,13 @@ export default function EditorView() {
     if (msg.type === "round_end") setRoundResults(msg.results);
   }, gameCode, "editor");
 
-  // Broadcast lobby config whenever teams or game code changes so players see teams immediately
+  // Broadcast lobby config whenever teams, game code, or mode changes
+  // so players see team choices and mode immediately on load.
   useEffect(() => {
     const enabled = teams.filter((t) => t.enabled);
     if (enabled.length < 2) return;
-    send({ type: "lobby_state", teams: enabled.map((t) => ({ ...t, colorIdx: t.id })), code: gameCode });
-  }, [teams, gameCode, send]);
+    send({ type: "lobby_state", teams: enabled.map((t) => ({ ...t, colorIdx: t.id })), code: gameCode, mode: gameMode });
+  }, [teams, gameCode, gameMode, send]);
 
   const enabledTeams = teams.filter((t) => t.enabled);
 
@@ -50,6 +51,12 @@ export default function EditorView() {
     send({ type: "reset" });
     setGameActive(false);
     setRoundResults(null);
+  };
+
+  // Switching game mode while a round is active resets the round first
+  const handleModeChange = (id) => {
+    if (gameActive) resetGame();
+    setGameMode(id);
   };
 
   const openArena = () => {
@@ -124,7 +131,7 @@ export default function EditorView() {
           <div style={{ fontSize: 11, color: "#889", letterSpacing: 1, marginBottom: 10 }}>GAME MODE</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {GAME_MODES.map((m) => (
-              <button key={m.id} onClick={() => setGameMode(m.id)}
+              <button key={m.id} onClick={() => handleModeChange(m.id)}
                 style={{
                   background: gameMode === m.id ? "rgba(94,183,241,0.15)" : "rgba(255,255,255,0.03)",
                   border: `1px solid ${gameMode === m.id ? "rgba(94,183,241,0.5)" : "rgba(255,255,255,0.06)"}`,
