@@ -18,6 +18,7 @@ export default function EditorView() {
   });
   const [gameActive, setGameActive] = useState(false);
   const [roundResults, setRoundResults] = useState(null);
+  const [showQR, setShowQR] = useState(false);
   const send = useBus((msg) => {
     if (msg.type === "round_end") setRoundResults(msg.results);
   });
@@ -47,6 +48,17 @@ export default function EditorView() {
   const openArena = () => {
     window.open(window.location.href.split("?")[0] + "?view=arena", "tow-arena",
       "width=1200,height=800,menubar=no,toolbar=no");
+  };
+
+  const openPlayer = () => {
+    window.open(window.location.href.split("?")[0] + "?view=player", "tow-player",
+      "width=390,height=844,menubar=no,toolbar=no");
+  };
+
+  const toggleQR = () => {
+    const next = !showQR;
+    setShowQR(next);
+    send({ type: "toggle_qr", show: next });
   };
 
   const toggleTeam = (id) => {
@@ -178,8 +190,24 @@ export default function EditorView() {
             color: "#ccd", fontSize: 14, fontWeight: 500,
           }}>
             🖥️ Open Arena Display
+          </button>          <button onClick={openPlayer} style={{
+            flex: 1, padding: "14px 0", borderRadius: 10, cursor: "pointer",
+            background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+            color: "#ccd", fontSize: 14, fontWeight: 500,
+          }}>
+            📱 Open Player View
           </button>
         </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <button onClick={toggleQR} style={{
+            width: "100%", padding: "12px 0", borderRadius: 10, cursor: "pointer",
+            background: showQR ? "rgba(94,183,241,0.15)" : "rgba(255,255,255,0.03)",
+            border: `1px solid ${showQR ? "rgba(94,183,241,0.5)" : "rgba(255,255,255,0.08)"}`,
+            color: showQR ? "#5eb7f1" : "#889", fontSize: 14, fontWeight: 500,
+          }}>
+            📷 {showQR ? "Hide QR Code on Arena" : "Show QR Code on Arena"}
+          </button>        </div>
 
         <div style={{ display: "flex", gap: 10 }}>
           {!gameActive ? (

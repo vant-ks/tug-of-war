@@ -42,6 +42,13 @@ Single-file React component for a multi-team tug-of-war party game. Runs as a Fr
 
 ---
 
+### 3. QR code on arena + open-player button in editor
+
+**Status:** IN PROGRESS
+**Files to change:** `src/views/EditorView.jsx`, `src/views/ArenaDisplay.jsx`, `package.json`
+
+---
+
 ### 2. Scaffold local dev project (Vite + React + Railway)
 
 **Status:** ✅ COMPLETE

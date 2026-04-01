@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { TEAM_COLORS } from "../constants";
 import { useBus } from "../hooks/useBus";
 import { readState } from "../utils/storage";
@@ -12,6 +13,7 @@ export default function ArenaDisplay() {
   const [phase, setPhase] = useState("idle"); // idle, countdown, playing, results
   const [particles, setParticles] = useState([]);
   const [strobeOn, setStrobeOn] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const timerRef = useRef();
   const forceRef = useRef({});
   const teamsRef = useRef([]);
@@ -44,6 +46,9 @@ export default function ArenaDisplay() {
       setTeamForces({});
       setKnotPos({ x: 0, y: 0 });
       if (timerRef.current) clearInterval(timerRef.current);
+    }
+    if (msg.type === "toggle_qr") {
+      setShowQR(msg.show);
     }
   });
 
@@ -407,6 +412,25 @@ export default function ArenaDisplay() {
           )}
         </div>
       )}
+
+      {showQR && (() => {
+        const playerUrl = `${window.location.origin}${window.location.pathname}?view=player`;
+        return (
+          <div style={{
+            position: "absolute", bottom: 24, right: 24, zIndex: 50,
+            background: "#fff", borderRadius: 14, padding: "16px 20px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.5)", textAlign: "center",
+          }}>
+            <QRCodeSVG value={playerUrl} size={160} level="M" />
+            <div style={{
+              fontSize: 11, color: "#444", marginTop: 10,
+              fontFamily: "monospace", maxWidth: 160, wordBreak: "break-all",
+            }}>
+              {playerUrl}
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         @keyframes countPulse {
