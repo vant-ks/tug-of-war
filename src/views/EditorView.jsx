@@ -21,6 +21,7 @@ export default function EditorView() {
   const [roundResults, setRoundResults] = useState(null);
   const [showQR, setShowQR] = useState(false);
   const [connectedCount, setConnectedCount] = useState(0);
+  const [teamCounts, setTeamCounts] = useState({});
   const [eventLog, setEventLog] = useState([]);
 
   // Keep URL in sync with the current game code
@@ -35,7 +36,10 @@ export default function EditorView() {
       setRoundResults(msg.results);
       setEventLog(p => [...p.slice(-14), { t: new Date().toLocaleTimeString(), msg: "Round ended" }]);
     }
-    if (msg.type === "connected") setConnectedCount(msg.count);
+    if (msg.type === "connected") {
+      setConnectedCount(msg.count);
+      setTeamCounts(msg.teamCounts || {});
+    }
   }, gameCode, "editor");
 
   // Broadcast lobby config whenever teams, game code, or mode changes
@@ -206,8 +210,15 @@ export default function EditorView() {
                   style={{
                     flex: 1, background: "transparent", border: "none", color: "#dde",
                     fontSize: 14, outline: "none",
-                  }} />
-                <button onClick={() => toggleTeam(t.id)}
+                  }} />                {t.enabled && (teamCounts[t.id] ?? 0) > 0 && (
+                  <div style={{
+                    minWidth: 22, height: 22, borderRadius: 11,
+                    background: TEAM_COLORS[t.id].bg + "cc",
+                    color: "#fff", fontSize: 12, fontWeight: 700,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "0 6px",
+                  }}>{teamCounts[t.id]}</div>
+                )}                <button onClick={() => toggleTeam(t.id)}
                   style={{
                     background: t.enabled ? "rgba(76,175,80,0.2)" : "rgba(255,255,255,0.06)",
                     border: `1px solid ${t.enabled ? "rgba(76,175,80,0.4)" : "rgba(255,255,255,0.08)"}`,

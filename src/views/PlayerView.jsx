@@ -150,6 +150,7 @@ export default function PlayerView() {
   const joinGame = () => {
     setJoined(true);
     setPhase("lobby");
+    send({ type: "join_team", teamId });
   };
 
   const teamColor = teamId !== null ? TEAM_COLORS[teamId] : null;
