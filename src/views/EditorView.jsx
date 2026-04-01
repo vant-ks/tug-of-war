@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TEAM_COLORS, GAME_MODES, TIMER_OPTIONS } from "../constants";
-import { useBus } from "../hooks/useBus";
+import { useSocket } from "../hooks/useSocket";
 import { broadcastState } from "../utils/storage";
 
 export default function EditorView() {
@@ -19,9 +19,9 @@ export default function EditorView() {
   const [gameActive, setGameActive] = useState(false);
   const [roundResults, setRoundResults] = useState(null);
   const [showQR, setShowQR] = useState(false);
-  const send = useBus((msg) => {
+  const send = useSocket((msg) => {
     if (msg.type === "round_end") setRoundResults(msg.results);
-  });
+  }, gameCode, "editor");
 
   const enabledTeams = teams.filter((t) => t.enabled);
 
@@ -46,12 +46,12 @@ export default function EditorView() {
   };
 
   const openArena = () => {
-    window.open(window.location.href.split("?")[0] + "?view=arena", "tow-arena",
+    window.open(window.location.href.split("?")[0] + `?view=arena&code=${gameCode}`, "tow-arena",
       "width=1200,height=800,menubar=no,toolbar=no");
   };
 
   const openPlayer = () => {
-    window.open(window.location.href.split("?")[0] + "?view=player", "tow-player",
+    window.open(window.location.href.split("?")[0] + `?view=player&code=${gameCode}`, "tow-player",
       "width=390,height=844,menubar=no,toolbar=no");
   };
 

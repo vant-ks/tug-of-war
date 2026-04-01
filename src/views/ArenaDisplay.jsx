@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { TEAM_COLORS } from "../constants";
-import { useBus } from "../hooks/useBus";
+import { useSocket } from "../hooks/useSocket";
 import { readState } from "../utils/storage";
 
 export default function ArenaDisplay() {
+  const arenaCode = new URLSearchParams(window.location.search).get("code");
   const [gameState, setGameState] = useState(null);
   const [countdown, setCountdown] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -20,7 +21,7 @@ export default function ArenaDisplay() {
   const teamsRef = useRef([]);
   const totalTimeRef = useRef(20);
 
-  const send = useBus((msg) => {
+  const send = useSocket((msg) => {
     if (msg.type === "start_game") {
       teamsRef.current = msg.teams;
       totalTimeRef.current = msg.timer;
@@ -52,9 +53,7 @@ export default function ArenaDisplay() {
       setShowQR(msg.show);
       if (msg.code) setQrCode(msg.code);
     }
-  });
-
-  // Also check localStorage for initial state
+  }, arenaCode, "arena");
   useEffect(() => {
     const s = readState();
     if (s && s.type === "start_game") setGameState(s);
