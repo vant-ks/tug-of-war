@@ -20,6 +20,8 @@ export default function EditorView() {
   const [gameActive, setGameActive] = useState(false);
   const [roundResults, setRoundResults] = useState(null);
   const [showQR, setShowQR] = useState(false);
+  const [connectedCount, setConnectedCount] = useState(0);
+  const [eventLog, setEventLog] = useState([]);
 
   // Keep URL in sync with the current game code
   useEffect(() => {
@@ -29,7 +31,11 @@ export default function EditorView() {
     window.history.replaceState({}, "", url.toString());
   }, [gameCode]);
   const send = useSocket((msg) => {
-    if (msg.type === "round_end") setRoundResults(msg.results);
+    if (msg.type === "round_end") {
+      setRoundResults(msg.results);
+      setEventLog(p => [...p.slice(-14), { t: new Date().toLocaleTimeString(), msg: "Round ended" }]);
+    }
+    if (msg.type === "connected") setConnectedCount(msg.count);
   }, gameCode, "editor");
 
   // Broadcast lobby config whenever teams, game code, or mode changes
@@ -54,12 +60,14 @@ export default function EditorView() {
     broadcastState(state);
     setGameActive(true);
     setRoundResults(null);
+    setEventLog(p => [...p.slice(-14), { t: new Date().toLocaleTimeString(), msg: "Game started" }]);
   };
 
   const resetGame = () => {
     send({ type: "reset" });
     setGameActive(false);
     setRoundResults(null);
+    setEventLog(p => [...p.slice(-14), { t: new Date().toLocaleTimeString(), msg: "Game reset" }]);
   };
 
   // Switching game mode while a round is active resets the round first
@@ -87,6 +95,7 @@ export default function EditorView() {
   const regenerateCode = () => {
     const next = Math.random().toString(36).substring(2, 8).toUpperCase();
     setGameCode(next);
+    setEventLog(p => [...p.slice(-14), { t: new Date().toLocaleTimeString(), msg: `New code: ${next}` }]);
     if (showQR) send({ type: "toggle_qr", show: true, code: next });
   };
 
@@ -127,6 +136,10 @@ export default function EditorView() {
           <div>
             <div style={{ fontSize: 11, color: "#889", letterSpacing: 1, marginBottom: 4 }}>JOIN CODE</div>
             <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: 4, color: "#5eb7f1" }}>{gameCode}</div>
+            <div style={{ fontSize: 11, letterSpacing: 1, marginTop: 4,
+              color: connectedCount > 1 ? "#66BB6A" : "#556" }}>
+              ● {connectedCount} connected
+            </div>
           </div>
           <button onClick={regenerateCode}
             style={{
@@ -274,6 +287,24 @@ export default function EditorView() {
                 <span style={{ fontSize: 18, fontWeight: 600, color: TEAM_COLORS[r.colorIdx].light }}>
                   {r.points} pts
                 </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Activity log */}
+        {eventLog.length > 0 && (
+          <div style={{
+            marginTop: 20, background: "rgba(255,255,255,0.02)", borderRadius: 10,
+            padding: "12px 16px", border: "1px solid rgba(255,255,255,0.04)",
+            maxHeight: 140, overflowY: "auto",
+          }}>
+            <div style={{ fontSize: 10, color: "#556", letterSpacing: 1, marginBottom: 8 }}>ACTIVITY LOG</div>
+            {[...eventLog].reverse().map((e, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, marginBottom: 3,
+                color: i === 0 ? "#ccd" : "#556" }}>
+                <span style={{ color: "#445", minWidth: 65, flexShrink: 0 }}>{e.t}</span>
+                <span>{e.msg}</span>
               </div>
             ))}
           </div>

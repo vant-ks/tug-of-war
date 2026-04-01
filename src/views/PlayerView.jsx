@@ -60,7 +60,7 @@ export default function PlayerView() {
   }, urlCode, "player");
   useEffect(() => {
     const s = readState();
-    if (s && s.type === "start_game") setGameState(s);
+    if (s && s.type === "start_game" && s.code === urlCode) setGameState(s);
   }, []);
 
   // Countdown

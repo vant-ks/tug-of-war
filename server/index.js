@@ -31,6 +31,15 @@ wss.on("connection", (ws, req) => {
   if (lobbyState.has(code)) ws.send(lobbyState.get(code));
   if (roomState.has(code)) ws.send(roomState.get(code));
 
+  // Broadcast updated connection count to all in the room
+  const broadcastCount = () => {
+    const r = rooms.get(code);
+    if (!r) return;
+    const msg = JSON.stringify({ type: "connected", count: r.size });
+    r.forEach(c => { if (c.readyState === ws.OPEN) c.send(msg); });
+  };
+  broadcastCount();
+
   ws.on("message", (data) => {
     const raw = data.toString();
     try {
@@ -52,12 +61,14 @@ wss.on("connection", (ws, req) => {
     room.delete(ws);
     if (room.size === 0) {
       rooms.delete(code);
-      // Keep roomState a bit longer so a page reload can rejoin
+    } else {
+      broadcastCount();
     }
   });
 
   ws.on("error", () => {
     room.delete(ws);
+    broadcastCount();
   });
 });
 

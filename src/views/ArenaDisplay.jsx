@@ -76,7 +76,7 @@ export default function ArenaDisplay() {
 
   useEffect(() => {
     const s = readState();
-    if (s && s.type === "start_game") setGameState(s);
+    if (s && s.type === "start_game" && s.code === arenaCode) setGameState(s);
   }, []);
 
   // Countdown
