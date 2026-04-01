@@ -13,12 +13,21 @@ export default function EditorView() {
     { id: 3, name: "Yellow Team", enabled: false },
   ]);
   const [gameCode, setGameCode] = useState(() => {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return code;
+    // Persist code in URL so the editor URL is bookmarkable and self-identifying
+    const fromUrl = new URLSearchParams(window.location.search).get("code");
+    return fromUrl || Math.random().toString(36).substring(2, 8).toUpperCase();
   });
   const [gameActive, setGameActive] = useState(false);
   const [roundResults, setRoundResults] = useState(null);
   const [showQR, setShowQR] = useState(false);
+
+  // Keep URL in sync with the current game code
+  useEffect(() => {
+    const url = new URL(window.location);
+    url.searchParams.set("view", "editor");
+    url.searchParams.set("code", gameCode);
+    window.history.replaceState({}, "", url.toString());
+  }, [gameCode]);
   const send = useSocket((msg) => {
     if (msg.type === "round_end") setRoundResults(msg.results);
   }, gameCode, "editor");
