@@ -58,7 +58,13 @@ export default function EditorView() {
   const toggleQR = () => {
     const next = !showQR;
     setShowQR(next);
-    send({ type: "toggle_qr", show: next });
+    send({ type: "toggle_qr", show: next, code: gameCode });
+  };
+
+  const regenerateCode = () => {
+    const next = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setGameCode(next);
+    if (showQR) send({ type: "toggle_qr", show: true, code: next });
   };
 
   const toggleTeam = (id) => {
@@ -99,7 +105,7 @@ export default function EditorView() {
             <div style={{ fontSize: 11, color: "#889", letterSpacing: 1, marginBottom: 4 }}>JOIN CODE</div>
             <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: 4, color: "#5eb7f1" }}>{gameCode}</div>
           </div>
-          <button onClick={() => setGameCode(Math.random().toString(36).substring(2, 8).toUpperCase())}
+          <button onClick={regenerateCode}
             style={{
               background: "rgba(94,183,241,0.12)", border: "1px solid rgba(94,183,241,0.3)",
               color: "#5eb7f1", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontSize: 13,

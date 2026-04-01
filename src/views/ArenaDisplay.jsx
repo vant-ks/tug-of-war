@@ -14,6 +14,7 @@ export default function ArenaDisplay() {
   const [particles, setParticles] = useState([]);
   const [strobeOn, setStrobeOn] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [qrCode, setQrCode] = useState(null);
   const timerRef = useRef();
   const forceRef = useRef({});
   const teamsRef = useRef([]);
@@ -49,6 +50,7 @@ export default function ArenaDisplay() {
     }
     if (msg.type === "toggle_qr") {
       setShowQR(msg.show);
+      if (msg.code) setQrCode(msg.code);
     }
   });
 
@@ -414,7 +416,7 @@ export default function ArenaDisplay() {
       )}
 
       {showQR && (() => {
-        const code = gameState?.code;
+        const code = qrCode || gameState?.code;
         const playerUrl = `${window.location.origin}${window.location.pathname}?view=player${code ? `&code=${code}` : ""}`;
         return (
           <div style={{
