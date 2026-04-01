@@ -34,10 +34,18 @@ export default function useRopePhysics({
   const activeRef = useRef(true);
 
   const applyPull = useCallback((teamIdx, power = 1) => {
-    if (teamIdx >= 0 && teamIdx < forces.current.length) {
-      forces.current[teamIdx] += power;
-    }
-  }, []);
+    if (teamIdx < 0 || teamIdx >= forces.current.length) return;
+    // Resistance grows the further the knot is already displaced toward this team.
+    // Project current knot position onto this team's direction; clamp [0,1].
+    // Effective power = power / (1 + 4 * displacement²)  — smooth reverse-log taper.
+    const angle = teamAngles.current[teamIdx];
+    if (angle === undefined) { forces.current[teamIdx] += power; return; }
+    const pos = posRef.current;
+    const proj = Math.max(0, pos.x * Math.cos(angle) + pos.y * Math.sin(angle)); // 0..arenaRadius
+    const norm = Math.min(proj / arenaRadius, 1); // 0..1
+    const resistance = 1 / (1 + 4 * norm * norm);
+    forces.current[teamIdx] += power * resistance;
+  }, [arenaRadius]);
 
   const reset = useCallback(() => {
     forces.current = new Array(teamCount).fill(0);

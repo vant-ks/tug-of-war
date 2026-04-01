@@ -31,17 +31,26 @@ export default function PlayerView() {
   const timerRef = useRef();
   const totalTimeRef = useRef(20);
   const scoreRef = useRef(0);
+  const streakRef = useRef(0);
+  const [streak, setStreak] = useState(0);
+  const [teamScores, setTeamScores] = useState({});
 
   const send = useSocket((msg) => {
     if (msg.type === "lobby_state") {
       setAvailableTeams(msg.teams);
       if (msg.mode) setLobbyMode(msg.mode);
     }
+    if (msg.type === "score_update") {
+      setTeamScores(prev => ({ ...prev, [msg.teamId]: (prev[msg.teamId] || 0) + msg.delta }));
+    }
     if (msg.type === "start_game") {
       setGameState(msg);
       totalTimeRef.current = msg.timer;
       setAvailableTeams(msg.teams);
       setGameInProgress(true);
+      setTeamScores({});
+      streakRef.current = 0;
+      setStreak(0);
       if (joined) {
         setPhase("countdown");
         setCountdown(3);
@@ -56,6 +65,9 @@ export default function PlayerView() {
       setGameState(null);
       setScore(0);
       scoreRef.current = 0;
+      setTeamScores({});
+      streakRef.current = 0;
+      setStreak(0);
     }
   }, urlCode, "player");
   useEffect(() => {
@@ -102,8 +114,25 @@ export default function PlayerView() {
 
   const doPull = (power = 1) => {
     send({ type: "pull", teamId, power });
+    send({ type: "score_update", teamId, delta: power });
+    setTeamScores(prev => ({ ...prev, [teamId]: (prev[teamId] || 0) + power }));
     scoreRef.current += power;
     setScore(scoreRef.current);
+  };
+
+  const handleCorrect = () => {
+    streakRef.current += 1;
+    setStreak(streakRef.current);
+    doPull(streakRef.current);
+    setFeedback(streakRef.current > 1 ? `✓ ×${streakRef.current}` : "✓");
+    setTimeout(() => { setFeedback(null); nextTrivia(); }, 400);
+  };
+
+  const handleWrong = () => {
+    streakRef.current = 0;
+    setStreak(0);
+    setFeedback("✗");
+    setTimeout(() => { setFeedback(null); nextTrivia(); }, 400);
   };
 
   const handleTap = () => {
@@ -114,37 +143,20 @@ export default function PlayerView() {
   };
 
   const handleMathAnswer = (ans) => {
-    if (triviaQ?.answer === ans) {
-      doPull(5);
-      setFeedback("✓");
-    } else {
-      setFeedback("✗");
-    }
-    setTimeout(() => { setFeedback(null); nextTrivia(); }, 400);
+    if (triviaQ?.answer === ans) handleCorrect();
+    else handleWrong();
   };
 
   const handleColorTap = (colorName) => {
-    if (triviaQ?.target === colorName) {
-      doPull(5);
-      setFeedback("✓");
-    } else {
-      setFeedback("✗");
-    }
-    setTimeout(() => { setFeedback(null); nextTrivia(); }, 400);
+    if (triviaQ?.target === colorName) handleCorrect();
+    else handleWrong();
   };
 
   const handleHighLow = (zone) => {
     const q = triviaQ;
-    let correct = false;
-    if (zone === "top" && q.topHigher) correct = true;
-    if (zone === "bottom" && q.botLower) correct = true;
-    if (correct) {
-      doPull(5);
-      setFeedback("✓");
-    } else {
-      setFeedback("✗");
-    }
-    setTimeout(() => { setFeedback(null); nextTrivia(); }, 400);
+    const correct = (zone === "top" && q.topHigher) || (zone === "bottom" && q.botLower);
+    if (correct) handleCorrect();
+    else handleWrong();
   };
 
   const joinGame = () => {
@@ -280,22 +292,55 @@ export default function PlayerView() {
   // PLAYING
   if (phase === "playing") {
     const mode = gameState?.mode || "tap";
+    const allTeams = gameState?.teams || [];
+    const totalPts = allTeams.reduce((s, t) => s + (teamScores[t.id] || 0), 0);
+
+    const teamProgressBar = allTeams.length > 0 && (
+      <div style={{ padding: "0 12px 14px" }}>
+        <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", height: 26, background: "rgba(255,255,255,0.05)" }}>
+          {allTeams.map(t => {
+            const pts = teamScores[t.id] || 0;
+            const pct = totalPts > 0 ? (pts / totalPts) * 100 : (100 / allTeams.length);
+            const c = TEAM_COLORS[t.colorIdx];
+            const isMe = t.id === teamId;
+            return (
+              <div key={t.id} style={{
+                width: `${pct}%`, background: isMe ? c.bg : c.bg + "88",
+                transition: "width 0.35s ease",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, fontWeight: 700, color: "#fff", overflow: "hidden",
+                boxShadow: isMe ? `inset 0 0 0 2px ${c.light}` : "none",
+              }}>
+                {pts > 0 ? pts : ""}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+
     return (
       <div style={{
         ...playerShell,
         background: tapFlash ? teamColor?.bg : (teamColor?.dark || "#0a0a1a"),
         transition: "background 0.08s",
       }}>
-        {/* Top bar: timer + score */}
+        {/* Top bar: timer + score + streak */}
         <div style={{
-          display: "flex", justifyContent: "space-between", padding: "12px 20px",
-          background: "rgba(0,0,0,0.3)",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "12px 20px", background: "rgba(0,0,0,0.3)",
         }}>
           <div style={{ color: timeLeft <= 5 ? "#E53935" : "#fff", fontSize: 28, fontWeight: 300 }}>
             {timeLeft}s
           </div>
-          <div style={{ color: teamColor?.light, fontSize: 28, fontWeight: 600 }}>
-            {score}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span style={{ color: teamColor?.light, fontSize: 28, fontWeight: 600 }}>{score}</span>
+            {streak > 1 && (
+              <span style={{
+                fontSize: 13, fontWeight: 800, color: "#FDD835",
+                letterSpacing: 1, textShadow: "0 0 8px rgba(253,216,53,0.6)",
+              }}>×{streak}</span>
+            )}
           </div>
         </div>
 
@@ -303,9 +348,10 @@ export default function PlayerView() {
         {feedback && (
           <div style={{
             position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-            fontSize: 80, zIndex: 100, pointerEvents: "none",
-            color: feedback === "✓" ? "#4CAF50" : "#E53935",
-            textShadow: feedback === "✓" ? "0 0 30px #4CAF50" : "0 0 30px #E53935",
+            fontSize: streak > 2 ? 64 : 80, zIndex: 100, pointerEvents: "none",
+            color: feedback.startsWith("✓") ? "#4CAF50" : "#E53935",
+            textShadow: feedback.startsWith("✓") ? "0 0 30px #4CAF50" : "0 0 30px #E53935",
+            fontWeight: 700,
           }}>{feedback}</div>
         )}
 
@@ -406,6 +452,9 @@ export default function PlayerView() {
             </button>
           </div>
         )}
+
+        {/* Team score progress bar */}
+        {teamProgressBar}
       </div>
     );
   }

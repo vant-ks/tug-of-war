@@ -15,6 +15,8 @@ const wsInfo = new Map();
 const roomState = new Map();
 // lobbyState: Map<code, string> — latest lobby_state (teams config) for late joiners
 const lobbyState = new Map();
+// qrState: Map<code, string> — latest toggle_qr for late joiners
+const qrState = new Map();
 
 wss.on("connection", (ws, req) => {
   const params = new URLSearchParams(req.url.replace(/^.*\?/, ""));
@@ -36,6 +38,7 @@ wss.on("connection", (ws, req) => {
   // Send cached lobby config then last game state to late joiners
   if (lobbyState.has(code)) ws.send(lobbyState.get(code));
   if (roomState.has(code)) ws.send(roomState.get(code));
+  if (qrState.has(code)) ws.send(qrState.get(code));
 
   // Broadcast player count + per-team counts to everyone in room
   const broadcastCount = () => {
@@ -60,8 +63,12 @@ wss.on("connection", (ws, req) => {
     try {
       const msg = JSON.parse(raw);
       if (msg.type === "start_game") roomState.set(code, raw);
-      if (msg.type === "reset") roomState.delete(code);
+      if (msg.type === "reset") {
+        roomState.delete(code);
+        qrState.delete(code);
+      }
       if (msg.type === "lobby_state") lobbyState.set(code, raw);
+      if (msg.type === "toggle_qr") qrState.set(code, raw);
       if (msg.type === "join_team") {
         const prev = info.get(ws) || { role, teamId: null };
         info.set(ws, { ...prev, teamId: msg.teamId });

@@ -12,6 +12,7 @@ const rooms = new Map();      // code → Set<ws>
 const wsInfo = new Map();     // code → Map<ws, {role, teamId}>
 const roomState = new Map();  // code → last start_game JSON string
 const lobbyState = new Map(); // code → last lobby_state JSON string
+const qrState = new Map();    // code → last toggle_qr JSON string
 
 const wss = new WebSocketServer({ port: PORT });
 
@@ -31,6 +32,7 @@ wss.on("connection", (ws, req) => {
   // Deliver cached state to late joiners
   if (lobbyState.has(code)) ws.send(lobbyState.get(code));
   if (roomState.has(code))  ws.send(roomState.get(code));
+  if (qrState.has(code))    ws.send(qrState.get(code));
 
   // Broadcast player count + per-team counts to everyone in room
   const broadcastCount = () => {
@@ -55,8 +57,12 @@ wss.on("connection", (ws, req) => {
     try {
       const msg = JSON.parse(raw);
       if (msg.type === "start_game")  roomState.set(code, raw);
-      if (msg.type === "reset")       roomState.delete(code);
+      if (msg.type === "reset") {
+        roomState.delete(code);
+        qrState.delete(code);
+      }
       if (msg.type === "lobby_state") lobbyState.set(code, raw);
+      if (msg.type === "toggle_qr")   qrState.set(code, raw);
       if (msg.type === "join_team") {
         const prev = info.get(ws) || { role, teamId: null };
         info.set(ws, { ...prev, teamId: msg.teamId });
