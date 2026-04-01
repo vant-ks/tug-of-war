@@ -16,8 +16,12 @@ export function useSocket(handler, code, role = "client") {
   useEffect(() => {
     if (!code) return;
 
-    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const url = `${proto}//${window.location.host}/ws?code=${encodeURIComponent(code)}&role=${role}`;
+    // In dev, connect directly to the standalone relay on 3041 (avoids Vite proxy issues).
+    // In prod, connect to the same host/port as the page (Express + ws on Railway).
+    const url = import.meta.env.DEV
+      ? `ws://localhost:3041/ws?code=${encodeURIComponent(code)}&role=${role}`
+      : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws?code=${encodeURIComponent(code)}&role=${role}`;
+
     const ws = new WebSocket(url);
     connRef.current = ws;
 

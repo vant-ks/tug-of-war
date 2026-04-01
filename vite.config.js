@@ -58,14 +58,5 @@ function towWsPlugin() {
 
 export default defineConfig({
   plugins: [react(), towWsPlugin()],
-  server: {
-    port: 3040,
-    proxy: {
-      // Forward all /ws traffic to the standalone relay
-      "/ws": {
-        target: `ws://localhost:${WS_DEV_PORT}`,
-        ws: true,
-      },
-    },
-  },
+  server: { port: 3040 },
 });
