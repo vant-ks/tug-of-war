@@ -293,31 +293,9 @@ export default function PlayerView() {
   if (phase === "playing") {
     const mode = gameState?.mode || "tap";
     const allTeams = gameState?.teams || [];
-    const totalPts = allTeams.reduce((s, t) => s + (teamScores[t.id] || 0), 0);
-
-    const teamProgressBar = allTeams.length > 0 && (
-      <div style={{ padding: "0 12px 14px" }}>
-        <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", height: 26, background: "rgba(255,255,255,0.05)" }}>
-          {allTeams.map(t => {
-            const pts = teamScores[t.id] || 0;
-            const pct = totalPts > 0 ? (pts / totalPts) * 100 : (100 / allTeams.length);
-            const c = TEAM_COLORS[t.colorIdx];
-            const isMe = t.id === teamId;
-            return (
-              <div key={t.id} style={{
-                width: `${pct}%`, background: isMe ? c.bg : c.bg + "88",
-                transition: "width 0.35s ease",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "#fff", overflow: "hidden",
-                boxShadow: isMe ? `inset 0 0 0 2px ${c.light}` : "none",
-              }}>
-                {pts > 0 ? pts : ""}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
+    const myTeamTotal = teamScores[teamId] || 0;
+    const myContrib = score;
+    const teamRest = Math.max(0, myTeamTotal - myContrib);
 
     return (
       <div style={{
@@ -325,16 +303,23 @@ export default function PlayerView() {
         background: tapFlash ? teamColor?.bg : (teamColor?.dark || "#0a0a1a"),
         transition: "background 0.08s",
       }}>
-        {/* Top bar: timer + score + streak */}
+        {/* Top bar: timer | my score + team rest | streak */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "12px 20px", background: "rgba(0,0,0,0.3)",
+          padding: "10px 16px", background: "rgba(0,0,0,0.3)", gap: 10,
         }}>
-          <div style={{ color: timeLeft <= 5 ? "#E53935" : "#fff", fontSize: 28, fontWeight: 300 }}>
+          <div style={{ color: timeLeft <= 5 ? "#E53935" : "#fff", fontSize: 26, fontWeight: 300, minWidth: 48 }}>
             {timeLeft}s
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span style={{ color: teamColor?.light, fontSize: 28, fontWeight: 600 }}>{score}</span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4, flex: 1, justifyContent: "center" }}>
+            <span style={{ color: teamColor?.light, fontSize: 28, fontWeight: 700 }}>{myContrib}</span>
+            {teamRest > 0 && (
+              <span style={{ color: teamColor?.light, fontSize: 18, fontWeight: 400, opacity: 0.65 }}>
+                +{teamRest}
+              </span>
+            )}
+          </div>
+          <div style={{ minWidth: 36, textAlign: "right" }}>
             {streak > 1 && (
               <span style={{
                 fontSize: 13, fontWeight: 800, color: "#FDD835",
@@ -343,6 +328,33 @@ export default function PlayerView() {
             )}
           </div>
         </div>
+
+        {/* Team score boxes */}
+        {allTeams.length > 0 && (
+          <div style={{ display: "flex", gap: 6, padding: "8px 12px 4px" }}>
+            {allTeams.map(t => {
+              const c = TEAM_COLORS[t.colorIdx];
+              const isMe = t.id === teamId;
+              const pts = teamScores[t.id] || 0;
+              return (
+                <div key={t.id} style={{
+                  flex: 1, borderRadius: 8, padding: "5px 6px",
+                  background: isMe ? c.bg + "40" : c.bg + "18",
+                  border: `1px solid ${isMe ? c.bg : c.bg + "55"}`,
+                  textAlign: "center",
+                  boxShadow: isMe ? `0 0 8px ${c.bg}44` : "none",
+                }}>
+                  <div style={{ fontSize: 10, color: c.light, letterSpacing: 0.5, opacity: 0.7, marginBottom: 1 }}>
+                    {t.name.split(" ")[0]}
+                  </div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: isMe ? c.light : c.bg }}>
+                    {pts}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Feedback flash */}
         {feedback && (
@@ -454,7 +466,6 @@ export default function PlayerView() {
         )}
 
         {/* Team score progress bar */}
-        {teamProgressBar}
       </div>
     );
   }
