@@ -97,13 +97,17 @@ TugOfWar (root component — URL router)
 ## 🛠️ STACK & ARCHITECTURE
 <!-- tags: stack, tech, framer -->
 
-- **Framework:** React (hooks only — no class components)
-- **Deployment target:** Framer import component (single `.jsx` file in `imports/`)
+- **Framework:** React 18 (hooks only — no class components)
+- **Dev server:** Vite 6 — `npm run dev` → `http://localhost:5173`
+- **Build:** `npm run build` → `dist/`
+- **Deploy:** Railway (static site via `serve`) — push to `main` triggers deploy
+- **Framer source:** `imports/TugOfWar.jsx` — single-file version kept in sync manually
 - **Cross-tab comms:** `BroadcastChannel` API
 - **Persistence:** `localStorage` (key: `"tow-state"`) for late-join sync only
 - **Styling:** Inline styles only (no CSS files, no Tailwind, no styled-components)
 - **No backend, no DB, no API calls**
 - **Timer options:** `[10, 20, 30]` seconds (defined in `TIMER_OPTIONS` constant)
+- **Port:** 5173 (dev), Railway-assigned (prod)
 
 ---
 

@@ -44,8 +44,11 @@ Single-file React component for a multi-team tug-of-war party game. Runs as a Fr
 
 ### 2. Scaffold local dev project (Vite + React + Railway)
 
-**Status:** IN PROGRESS
-**Files to change:** `package.json`, `vite.config.js`, `index.html`, `.gitignore`, `railway.json`, `README.md`, `src/` (all source files)
+**Status:** ✅ COMPLETE
+**Tags:** feat, scaffold, vite, deploy, git
+**Files changed:** `package.json`, `vite.config.js`, `index.html`, `.gitignore`, `railway.json`, `README.md`, `src/App.jsx`, `src/main.jsx`, `src/constants.js`, `src/hooks/useBus.js`, `src/utils/storage.js`, `src/utils/trivia.js`, `src/views/EditorView.jsx`, `src/views/ArenaDisplay.jsx`, `src/views/PlayerView.jsx`
+**Commit:** 5cd7fb3
+**Summary:** Scaffolded full Vite + React dev project, expanded single-file Framer JSX into modular src/ structure, added Railway deploy config, initialized git repo.
 
 ---
 

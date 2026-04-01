@@ -43,20 +43,23 @@ Execute this protocol automatically.
 
 ### Phase 2: Environment Check
 
-This project has **no dev server** — it is a Framer import component (single `.jsx` file).
-
-Verify:
-- `imports/TugOfWar.jsx` exists and is not corrupted (check line count)
-- Symlinks in `docs/` resolve correctly
+Verify `imports/TugOfWar.jsx` is intact and start the dev server:
 
 ```bash
 wc -l imports/TugOfWar.jsx
 ls -la docs/
 ```
 
+Start dev server (background):
+```bash
+npm run dev
+# → http://localhost:5173
+```
+Verify HTTP 200 on `http://localhost:5173`.
+
 ---
 
-### Phase 3: Git Pipeline (if git initialized)
+### Phase 3: Git Pipeline
 
 ```bash
 git status
@@ -82,7 +85,7 @@ Report:
 
 **DEVLOG RULE:** Add IN PROGRESS checkpoint before any task. Update to ✅ COMPLETE immediately after.
 
-**SINGLE FILE RULE:** All code lives in `imports/TugOfWar.jsx`. Do not create new source files. New reference files go in `imports/` and are documented in `docs/PROJECT_RULES.md` → Imports Folder Protocol.
+**SINGLE FILE RULE:** The Framer source stays in `imports/TugOfWar.jsx`. The dev project lives in `src/`. Keep them manually in sync when making non-trivial changes.
 
 **NO DEPENDENCIES RULE:** No npm packages, no imports beyond what's already in the file.
 

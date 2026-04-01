@@ -63,18 +63,36 @@ Protocols reviewed and noted. Identified missing docs infrastructure.
 
 #### Actions Taken:
 1. Read `imports/TugOfWar.jsx` to extract project-specific values
-2. Created `docs/PROJECT_RULES.md` (filled in with real entities, pillars, stack, gotchas)
-3. Created `DEVLOG.md`
-4. Created `TODO_NEXT_SESSION.md`
-5. Created `docs/SESSION_JOURNAL.md` (this file)
-6. Created `docs/SESSION_START_PROTOCOL.md`
-
-#### Files Changed:
-- `docs/PROJECT_RULES.md` — new, project-specific rules
-- `docs/SESSION_JOURNAL.md` — new
-- `docs/SESSION_START_PROTOCOL.md` — new
-- `DEVLOG.md` — new
-- `TODO_NEXT_SESSION.md` — new
+2. Created `docs/PROJECT_RULES.md`, `docs/SESSION_JOURNAL.md`, `docs/SESSION_START_PROTOCOL.md`, `docs/DEVLOG.md`, `docs/TODO_NEXT_SESSION.md`
+3. Added symlinks in `docs/` for universal _Utilities docs
 
 #### Outcome: ✅ Complete
-Full docs scaffold in place. No git repo yet.
+Full docs scaffold in place.
+
+---
+
+### Prompt 3: Scaffold local dev project + Railway
+**Request:** Build project on local dev server, expand JSX into component files, connect to GitHub/Railway.
+
+#### Actions Taken:
+1. Read full `imports/TugOfWar.jsx` (1145 lines)
+2. Created `package.json`, `vite.config.js`, `index.html`, `.gitignore`, `railway.json`, `README.md`
+3. Created `src/constants.js`, `src/hooks/useBus.js`, `src/utils/storage.js`, `src/utils/trivia.js`
+4. Created `src/views/EditorView.jsx`, `src/views/ArenaDisplay.jsx`, `src/views/PlayerView.jsx`
+5. Created `src/App.jsx`, `src/main.jsx`
+6. Ran `npm install` → 0 vulnerabilities
+7. Ran `npm run build` → ✅ clean (169KB JS, 308ms)
+8. Started dev server → ✅ HTTP 200 on localhost:5174
+9. `git init` + initial commit `5cd7fb3`
+10. Updated `docs/PROJECT_RULES.md` stack section and SESSION_START_PROTOCOL dev server step
+11. Updated `_Utilities` templates with symlink + imports protocols
+
+#### Files Changed:
+- `src/` — all new source files (9 files)
+- `package.json`, `vite.config.js`, `index.html`, `.gitignore`, `railway.json`, `README.md` — new
+- `docs/PROJECT_RULES.md` — updated stack section
+- `docs/SESSION_START_PROTOCOL.md` — added dev server step
+- `docs/DEVLOG.md`, `docs/SESSION_JOURNAL.md` — checkpointed
+
+#### Outcome: ✅ Complete
+Dev server running. Build clean. Git initialized with initial commit. Ready to connect GitHub remote + Railway.
